@@ -1,0 +1,81 @@
+---
+title: "Practical Machine Learning Project"
+author: "Hsiao-shan Yang"
+date: "Sunday, January 25, 2015"
+output: html_document
+---
+##Prupose of the project
+This is a project for the Coursera course of Practical Machine Learning. I am using the personal activity data to build a predictive model. The goal of model is to predict the manner in which people did the exercise. This is the "classe" variable in the training set. 
+
+###Background and data
+Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement - a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website here: http://groupware.les.inf.puc-rio.br/har (see the section on the Weight Lifting Exercise Dataset). Data is available at <https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv> and <https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv>.
+
+
+##Data Processing
+Load basic packages
+```{r}
+library(caret)
+library(randomForest)
+```
+
+Load data and convert variables to numeric class.
+```{r, warning=FALSE}
+training_data <- read.csv("pml-training.csv", na.strings = c("NA", ""))
+evaluation_data <- read.csv("pml-testing.csv", na.strings = c("NA", ""))
+for(i in c(8:ncol(training_data)-1)) {training_data[,i] = as.numeric(as.character(training_data[,i]))}
+for(i in c(8:ncol(evaluation_data)-1)) {evaluation_data[,i] = as.numeric(as.character(evaluation_data[,i]))}
+```
+
+75% of data are used for the training set. 
+```{r}
+dim(training_data)
+set.seed(1111)
+inTrain <- createDataPartition(y=training_data$classe, p=0.75, list=FALSE)
+training <- training_data[inTrain,]
+testing <- training_data[-inTrain,]
+dim(training)
+```
+
+Subset data to variables with near zero variances and too many missing values.
+```{r}
+nsv <- nearZeroVar(training, saveMetrics=TRUE)
+drop_var <- rownames(nsv[which(nsv$nzv=="TRUE" ),])
+na_test = sapply(training, function(x) {sum(is.na(x))})
+table(na_test)
+NA_columns <- names(na_test[na_test>14000])
+training <- training[, !names(training) %in% drop_var]
+training <- training[, !names(training) %in% NA_columns]
+training = training[,-c(1:7)]  #remove charater variables
+dim(training)
+```
+
+Train the model with random forest.
+```{r}
+model <- randomForest(classe~.,data=training, na.action = na.roughfix)
+varImp(model)
+```
+
+In-sample prediction
+```{r}
+predictions1 <- predict(model, testing, type = "class")
+confusionMatrix(predictions1, testing$classe)
+```
+
+###Prediction assignment submission
+Predict the test data set provided from the course. 
+```{r}
+predictions2 <- predict(model, evaluation_data, type = "class")
+```
+
+The following code is provided by the coursera course for answer submission.
+```{r}
+pml_write_files = function(x){
+  n = length(x)
+  for(i in 1:n){
+    filename = paste0("problem_id_",i,".txt")
+    write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
+  }
+}
+
+pml_write_files(predictions2)
+```
