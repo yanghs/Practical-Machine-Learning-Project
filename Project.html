@@ -158,7 +158,8 @@ varImp(model)</code></pre>
 ## magnet_forearm_x     175.38165
 ## magnet_forearm_y     176.07949
 ## magnet_forearm_z     233.97522</code></pre>
-<p>In-sample prediction</p>
+<div id="out-of-sample-prediction" class="section level3">
+<h3>Out of sample prediction</h3>
 <pre class="r"><code>predictions1 &lt;- predict(model, testing, type = &quot;class&quot;)
 confusionMatrix(predictions1, testing$classe)</code></pre>
 <pre><code>## Confusion Matrix and Statistics
@@ -192,6 +193,8 @@ confusionMatrix(predictions1, testing$classe)</code></pre>
 ## Detection Rate         0.2845   0.1925   0.1739   0.1621   0.1833
 ## Detection Prevalence   0.2851   0.1929   0.1762   0.1623   0.1835
 ## Balanced Accuracy      0.9996   0.9971   0.9975   0.9943   0.9988</code></pre>
+<p>The model has a 99.63% precision for perdiction.</p>
+</div>
 <div id="prediction-assignment-submission" class="section level3">
 <h3>Prediction assignment submission</h3>
 <p>Predict the test data set provided from the course.</p>

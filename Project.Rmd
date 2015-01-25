@@ -55,11 +55,13 @@ model <- randomForest(classe~.,data=training, na.action = na.roughfix)
 varImp(model)
 ```
 
-In-sample prediction
+###Out of sample prediction
 ```{r}
 predictions1 <- predict(model, testing, type = "class")
 confusionMatrix(predictions1, testing$classe)
 ```
+
+The model has a 99.63% precision for perdiction.
 
 ###Prediction assignment submission
 Predict the test data set provided from the course. 
